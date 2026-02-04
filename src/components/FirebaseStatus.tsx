@@ -1,12 +1,3 @@
-// src/components/FirebaseStatus.tsx
-
-/**
- * Firebase 연동 상태 확인 컴포넌트
- *
- * Firebase가 제대로 초기화되었는지 확인합니다.
- * 개발 중에만 사용하고, 배포 시에는 제거하거나 숨깁니다.
- */
-
 import { useEffect, useState } from "react";
 import { collection, getDocs, limit, query } from "firebase/firestore";
 import { auth, db } from "@/lib/firebase";
@@ -38,11 +29,14 @@ function FirebaseStatus() {
                 // Firestore 실제 연결 확인 - 서버에 쿼리 시도
                 let firestoreOk = false;
                 try {
-                    await getDocs(query(collection(db, "__connection_test__"), limit(1)));
+                    await getDocs(query(collection(db, "posts"), limit(1)));
                     firestoreOk = true;
                 } catch (e) {
                     // 권한 오류(permission-denied)는 "연결은 됨"으로 간주
-                    if (e instanceof Error && e.message.includes("permission")) {
+                    if (
+                        e instanceof Error &&
+                        e.message.includes("permission")
+                    ) {
                         firestoreOk = true;
                     }
                 }
@@ -95,17 +89,6 @@ function FirebaseStatus() {
             </h3>
 
             <div className="space-y-2">
-                {/* 반복되서 컨포넌트로 구성했어요 */}
-                {/* <div className="flex items-center gap-2">
-                    <span
-                        className={`w-3 h-3 rounded-full ${
-                            isConnected ? "bg-green-500" : "bg-red-500"
-                        }`}
-                    />
-                    <span className="text-sm">
-                        {label}: {isConnected ? "연결됨" : "연결 안됨"}
-                    </span>
-                </div> */}
                 <StatusItem
                     label="Firebase App"
                     isConnected={status.firebase}
