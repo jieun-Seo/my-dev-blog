@@ -23,7 +23,13 @@ import LoginPage from "@/pages/LoginPage";
 import SignUpPage from "@/pages/SignUpPage";
 import { useAuthStore } from "./store/authStore";
 import PostWritePage from './pages/PostWritePage';
+import PostDetailPage from "./pages/PostDetailPage";
+import PostEditPage from "./pages/PostEditPage";
 
+// TanStack Query Client 설정
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "./lib/queryClient";
 
 function App() {
     // Zustand 스토어에서 상태와 액션 가져오기
@@ -64,27 +70,41 @@ function App() {
     }
 
     return (
-        <BrowserRouter>
-            <Routes>
-                {/* 레이아웃이 적용되는 라우트 */}
-                <Route element={<MainLayout />}>
-                    <Route path="/" element={<HomePage />} />
-                    {/* 보호된 라우트 - 로그인 필요 */}
-                    <Route
-                        path="/write"
-                        element={
-                        <ProtectedRoute>
-                            <PostWritePage />
-                        </ProtectedRoute>
-                        }
-                    />
-                </Route>
+        <QueryClientProvider client={queryClient}>
+            <BrowserRouter>
+                <Routes>
+                    {/* 레이아웃이 적용되는 라우트 */}
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/posts/:id" element={<PostDetailPage />} />
+                        
+                        {/* 보호된 라우트 - 로그인 필요 */}
+                        <Route
+                            path="/write"
+                            element={
+                            <ProtectedRoute>
+                                <PostWritePage />
+                            </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/posts/:id/edit"
+                            element={
+                                <ProtectedRoute>
+                                    <PostEditPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Route>
 
-                {/* 레이아웃 없이 표시되는 인증 페이지 */}
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignUpPage />} />
-            </Routes>
-        </BrowserRouter>
+                    {/* 레이아웃 없이 표시되는 인증 페이지 */}
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/signup" element={<SignUpPage />} />
+                </Routes>
+            </BrowserRouter>
+             {/* 개발 도구 (개발 환경에서만 표시) */}
+            <ReactQueryDevtools initialIsOpen={false} />
+        </QueryClientProvider>
     );
 }
 
