@@ -82,22 +82,16 @@ function PostEditPage() {
     }
 
     return (
-        <div className="max-w-2xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">글 수정</h1>
-
-            <div className="bg-white rounded-lg shadow p-6">
-                <PostForm
-                    initialData={{
-                        title: post.title,
-                        content: post.content,
-                        category: post.category,
-                    }}
-                    onSubmit={handleSubmit}
-                    submitLabel="수정하기"
-                    isLoading={updatePostMutation.isPending}
-                />
-            </div>
-        </div>
+        <PostForm
+            initialData={{
+                title: post.title,
+                content: post.content,
+                category: post.category,
+            }}
+            onSubmit={handleSubmit}
+            submitLabel="수정하기"
+            isLoading={updatePostMutation.isPending}
+        />
     );
 }
 
