@@ -3,8 +3,8 @@ import { usePost } from "@/hooks/queries";
 import { useDeletePost } from "@/hooks/mutations";
 import { useAuthStore } from "@/store/authStore";
 import { CATEGORY_LABELS } from "@/types";
-
-// UI Components
+import { ROUTES, getPostEditPath } from "@/constants";
+import { formatDateTime, getDisplayName } from "@/utils/formatters";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,19 +25,8 @@ function PostDetailPage() {
 
     deletePostMutation.mutate(id, {
       onSuccess: () => {
-        navigate("/");
+        navigate(ROUTES.HOME);
       },
-    });
-  };
-
-  const formatDate = (timestamp: { toDate: () => Date }) => {
-    const date = timestamp.toDate();
-    return date.toLocaleDateString("ko-KR", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
     });
   };
 
@@ -90,10 +79,10 @@ function PostDetailPage() {
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="text-sm text-muted-foreground">
               <span>
-                {post.authorDisplayName || post.authorEmail.split("@")[0]}
+                {getDisplayName(post.authorEmail, post.authorDisplayName)}
               </span>
               <span className="mx-2">·</span>
-              <span>{formatDate(post.createdAt)}</span>
+              <span>{formatDateTime(post.createdAt)}</span>
               {post.updatedAt.toMillis() !== post.createdAt.toMillis() && (
                 <span className="ml-2">(수정됨)</span>
               )}
@@ -103,7 +92,7 @@ function PostDetailPage() {
             {isAuthor && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" asChild>
-                  <Link to={`/posts/${post.id}/edit`}>수정</Link>
+                  <Link to={getPostEditPath(post.id)}>수정</Link>
                 </Button>
                 <DeletePostDialog
                   onConfirm={handleDelete}
@@ -128,7 +117,7 @@ function PostDetailPage() {
       {/* 목록으로 링크 */}
       <div className="mt-6">
         <Button variant="ghost" asChild>
-          <Link to="/">← 목록으로</Link>
+          <Link to={ROUTES.HOME}>← 목록으로</Link>
         </Button>
       </div>
     </div>
