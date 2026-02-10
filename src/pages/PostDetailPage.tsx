@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { usePost } from "@/hooks/queries";
 import { useDeletePost } from "@/hooks/mutations";
@@ -10,7 +11,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import DeletePostDialog from "@/components/DeletePostDialog";
+import CommentSection from "@/components/CommentSection";
 import ErrorMessage from "@/components/ErrorMessage";
+
+import DOMPurify from "dompurify"; // 추가된 부분
 
 function PostDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -20,7 +24,7 @@ function PostDetailPage() {
   const { data: post, isLoading, error, refetch } = usePost(id);
   const deletePostMutation = useDeletePost();
 
-  const handleDelete = async () => {
+  const handleDelete = useCallback(() => {
     if (!id) return;
 
     deletePostMutation.mutate(id, {
@@ -28,11 +32,10 @@ function PostDetailPage() {
         navigate(ROUTES.HOME);
       },
     });
-  };
+  }, [id, deletePostMutation, navigate]);
 
   const isAuthor = user && post && user.uid === post.authorId;
 
-  // 로딩 스켈레톤
   if (isLoading) {
     return (
       <Card>
@@ -50,7 +53,6 @@ function PostDetailPage() {
     );
   }
 
-  // 에러 상태
   if (error || !post) {
     return (
       <ErrorMessage
@@ -65,17 +67,13 @@ function PostDetailPage() {
     <div>
       <Card>
         <CardHeader className="space-y-4">
-          {/* 카테고리 */}
           {post.category && (
             <Badge variant="secondary" className="w-fit">
               {CATEGORY_LABELS[post.category]}
             </Badge>
           )}
 
-          {/* 제목 */}
           <h1 className="text-2xl font-bold">{post.title}</h1>
-
-          {/* 메타 정보 */}
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="text-sm text-muted-foreground">
               <span>
@@ -88,7 +86,6 @@ function PostDetailPage() {
               )}
             </div>
 
-            {/* 수정/삭제 버튼 */}
             {isAuthor && (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" asChild>
@@ -103,18 +100,25 @@ function PostDetailPage() {
           </div>
         </CardHeader>
 
+        {/* 수정된 부분 */}
         <CardContent>
-          <div className="prose dark:prose-invert max-w-none">
-            {post.content.split("\n").map((line, index) => (
-              <p key={index} className="mb-4">
-                {line || <br />}
-              </p>
-            ))}
-          </div>
+          <div
+            className="prose dark:prose-invert max-w-none prose-img:rounded-lg prose-a:text-blue-600 prose-a:no-underline hover:prose-a:underline"
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(post.content, {
+                ADD_TAGS: ["iframe"],
+                ADD_ATTR: [
+                  "allow",
+                  "allowfullscreen",
+                  "frameborder",
+                  "scrolling",
+                ],
+              }),
+            }}
+          />
         </CardContent>
       </Card>
-
-      {/* 목록으로 링크 */}
+      {id && <CommentSection postId={id} />}
       <div className="mt-6">
         <Button variant="ghost" asChild>
           <Link to={ROUTES.HOME}>← 목록으로</Link>
